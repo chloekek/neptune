@@ -1,0 +1,138 @@
+#!/usr/bin/env perl
+
+use v5.20;
+use warnings;
+
+use autodie;
+
+# Provides functions similar to the built-in system
+# but with failure handling and avoiding the shell.
+use IPC::System::Simple qw(capturex runx);
+
+# Executables built using Nix.
+# These are provided by shell.nix,
+# and will be symlinked into /bin in the rootfs.
+my @nix_executables = split(/ /, $ENV{NP_NIX_EXECUTABLES});
+
+# Executables not built using Nix.
+# These are built below using Cargo,
+# and will be copied into /bin in the rootfs.
+my @non_nix_executables = qw{
+    output/rust-crates/debug/np-initd
+};
+
+say('Checking Linux config.');
+
+    {
+        # When you accidentally ill-format the config entries,
+        # the Linux build system will simply ignore the setting.
+        # This is not what we want as it is very easy to screw up.
+        open(my $config, '<', 'linux/extra.config');
+        while (<$config>) {
+            chomp;
+            next if /^#/ || /^$/;
+            unless (/^[A-Z0-9_]+=[ynm]$/) {
+                STDERR->say('Syntax error in linux/extra.config.');
+                STDERR->say('Config keys must be uppercase, ');
+                STDERR->say('and config values must be lowercase.');
+                exit(1);
+            }
+        }
+    }
+
+say('Building Linux.');
+
+    runx(qw{nix-build --out-link output/linux --expr}, <<~'NIX');
+        let nixpkgs = import nix/nixpkgs; in
+        nixpkgs.callPackage ./linux { }
+    NIX
+
+say('Building Rust crates.');
+
+    $ENV{CARGO_TARGET_DIR} = 'output/rust-crates';
+    runx(qw{cargo build});
+    runx(qw{cargo test});
+    runx(qw{cargo doc});
+
+# Building rootfs is harsh on the disk.
+# Allow opting out of it as it is not needed
+# for unit testing Rust code.
+if (defined($ENV{NP_BUILD_SKIP_ROOTFS})) {
+    exit(0);
+}
+
+say('Stripping debug symbols.');
+
+    # We need to strip debug symbols because they contain Nix store paths
+    # that are not necessary at runtime and would imply a huge Nix closure.
+    runx('strip', @non_nix_executables);
+
+say('Computing Nix closure.');
+
+    # Compute the Nix dependencies of non-Nix executables.
+    # Unfortunately `nix-store --query --requisites`
+    # does not support files outside the Nix store.
+    # Fortunately the heuristic for finding store paths
+    # is a very simple regular expression.
+    my @nix_references =
+        grep { -e }
+        map { chomp; $_ }
+        capturex(
+            qw{
+                grep
+                --extended-regexp
+                --only-matching
+                --text
+                /nix/store/[a-z0-9]{32}-[a-zA-Z0-9+._?=-]+
+            },
+            @non_nix_executables,
+        );
+
+    # Compute the closure of each dependency.
+    my @nix_closure =
+        map { chomp; $_ }
+        capturex(
+            qw{nix-store --query --requisites},
+            @nix_executables,
+            @nix_references,
+        );
+
+    say for @nix_closure;
+
+say('Building rootfs.');
+
+    # Clean up the rootfs directory from the previous build.
+    # The Nix store directories are read-only even after copying,
+    # so in order to delete them we first need to make them writable.
+    if (-e 'output/rootfs.dir') {
+        runx(qw{chmod --recursive +w output/rootfs.dir});
+        runx(qw{rm --force --recursive output/rootfs.dir});
+    }
+
+    # Create the directory layout.
+    runx(qw{
+        mkdir
+        output/rootfs.dir
+        output/rootfs.dir/bin
+        output/rootfs.dir/dev
+        output/rootfs.dir/nix
+        output/rootfs.dir/nix/store
+        output/rootfs.dir/proc
+        output/rootfs.dir/run
+        output/rootfs.dir/sys
+    });
+
+    # Copy the Nix store paths.
+    # Passing --link would be nice,
+    # but it is cross-device and fails.
+    for my $nix_path (@nix_closure) {
+        runx(qw{cp --archive}, $nix_path, 'output/rootfs.dir/nix/store');
+    }
+
+    # Place executables in /bin.
+    runx('ln', @non_nix_executables, 'output/rootfs.dir/bin');
+    runx('ln', '--symbolic', @nix_executables, 'output/rootfs.dir/bin');
+
+    # Create the ext4 image.
+    runx(qw{truncate --size=100M output/rootfs.ext4});
+    runx(qw{mkfs.ext4 -F -d output/rootfs.dir output/rootfs.ext4});
