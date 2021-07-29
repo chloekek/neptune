@@ -1,0 +1,6 @@
+# This is not the entire Linux configuration file.
+# Rather, it is appended onto the generated configuration file.
+# See default.nix for more information on how this works.
+
+# Compile ext4 support as a built-in as it is required for booting.
+CONFIG_EXT4_FS=Y
