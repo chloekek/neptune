@@ -9,7 +9,7 @@ rootfs=$(nix-build --no-out-link -A neptunos.rootfs)
 
 # Configure the kernel command line.
 kernel_flags="
-    root=/dev/sda
+    root=/dev/sda rw
     init=$daemons/bin/neptunos-init-daemon
 "
 
