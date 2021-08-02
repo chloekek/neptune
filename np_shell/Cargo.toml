@@ -1,0 +1,18 @@
+[package]
+name = "np_shell"
+version = "0.0.0"
+edition = "2018"
+
+[dependencies.cgmath]
+default-features = false
+version = "=0.18.0"
+
+[dependencies.libc]
+default-features = false
+version = "=0.2.98"
+
+[dependencies.np_graphics]
+path = "../np_graphics"
+
+[dependencies.np_unix]
+path = "../np_unix"

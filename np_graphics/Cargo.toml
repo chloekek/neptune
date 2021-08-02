@@ -1,0 +1,8 @@
+[package]
+name = "np_graphics"
+version = "0.0.0"
+edition = "2018"
+
+[dependencies.cgmath]
+default-features = false
+version = "=0.18.0"

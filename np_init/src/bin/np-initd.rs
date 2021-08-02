@@ -18,6 +18,9 @@ fn main() -> Result<()>
     mount_proc()?;
     mount_sys()?;
 
+    let shell = Command::new("/bin/np-shelld").spawn()?;
+    println!("{:?}", shell.id());
+
     let bash = Command::new("/bin/bash").spawn()?;
     println!("{:?}", bash.id());
 

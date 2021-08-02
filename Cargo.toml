@@ -1,5 +1,7 @@
 [workspace]
 members = [
+    "np_graphics",
     "np_init",
+    "np_shell",
     "np_unix",
 ]

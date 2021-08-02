@@ -5,6 +5,8 @@ use warnings;
 
 use autodie;
 
+use Cwd qw(getcwd);
+
 # Provides functions similar to the built-in system
 # but with failure handling and avoiding the shell.
 use IPC::System::Simple qw(capturex runx);
@@ -19,6 +21,7 @@ my @nix_executables = split(/ /, $ENV{NP_NIX_EXECUTABLES});
 # and will be copied into /bin in the rootfs.
 my @non_nix_executables = qw{
     output/rust-crates/debug/np-initd
+    output/rust-crates/debug/np-shelld
 };
 
 say('Checking Linux config.');
@@ -49,7 +52,9 @@ say('Building Linux.');
 
 say('Building Rust crates.');
 
+    my $rustdoc_html_header = getcwd() . '/tools/rustdoc-html-header.html';
     $ENV{CARGO_TARGET_DIR} = 'output/rust-crates';
+    $ENV{CARGO_BUILD_RUSTDOCFLAGS} = "--html-in-header $rustdoc_html_header";
     runx(qw{cargo build});
     runx(qw{cargo test});
     runx(qw{cargo doc});

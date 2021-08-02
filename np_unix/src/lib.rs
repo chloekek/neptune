@@ -7,11 +7,13 @@
 //! For convenience, this crate also provides a C string literal macro.
 //! This can be used for creating literal string arguments to system calls.
 
+pub use self::mmap::*;
 pub use self::mount::*;
 pub use self::signalfd::*;
 pub use self::sigprocmask::*;
 pub use self::sigset::*;
 
+mod mmap;
 mod mount;
 mod signalfd;
 mod sigprocmask;
