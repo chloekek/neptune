@@ -1,3 +1,4 @@
+use crate::Bezier;
 use crate::Format;
 use crate::Matrix;
 use crate::Paint;
@@ -14,7 +15,7 @@ pub trait Canvas
     /// (perhaps they generate vector graphics instead),
     /// this type gives them an idea of color and alpha values.
     /// See [`Format::Pixel`] for more information on pixel types.
-    type Pixel;
+    type Pixel: Copy;
 
     /// Draw a filled rectangle starting at `start`
     /// and extending `extent` units to the bottom right,
@@ -26,6 +27,32 @@ pub trait Canvas
         extent: Vector,
         paint: Paint<Self::Pixel>,
     );
+
+    /// Draw a single Bézier curve,
+    /// transformed with the given matrix.
+    ///
+    /// The provided implementation samples the Bézier curve
+    /// and draws a 1×1 rectangle at each sample.
+    fn bezier(
+        &mut self,
+        matrix: Matrix,
+        bezier: Bezier,
+        paint: Paint<Self::Pixel>,
+    )
+    {
+        // FIXME: This algorithm is very bad.
+        let samples = 100;
+        for i in 0 .. samples {
+            let t = i as f64 / samples as f64;
+            let point = bezier.evaluate(t);
+            self.rectangle(
+                matrix,
+                point,
+                Vector{x: 1.0, y: 1.0},
+                paint,
+            );
+        }
+    }
 }
 
 /// Canvas that draws onto a pixel map.

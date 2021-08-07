@@ -35,7 +35,7 @@ pub trait Blitter
     /// Draw a filled rectangle starting at `start`
     /// and extending `extent` pixels to the bottom right.
     ///
-    /// The default implementation calls [`Blitter::horizontal`]
+    /// The provided implementation calls [`Blitter::horizontal`]
     /// for each Y coordinate in the start–extent range.
     fn rectangle(
         &self,

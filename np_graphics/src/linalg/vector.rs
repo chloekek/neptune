@@ -13,7 +13,7 @@ use std::ops;
 /// \end{bmatrix}
 /// \\)
 #[allow(missing_docs)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Vector
 {
     pub x: f64,
@@ -42,6 +42,19 @@ impl ops::Sub<Vector> for Vector
         Vector{
             x: self.x - rhs.x,
             y: self.y - rhs.y,
+        }
+    }
+}
+
+impl ops::Mul<Vector> for f64
+{
+    type Output = Vector;
+
+    fn mul(self, rhs: Vector) -> Self::Output
+    {
+        Vector{
+            x: self * rhs.x,
+            y: self * rhs.y,
         }
     }
 }

@@ -17,7 +17,7 @@ use std::ops;
 /// \end{bmatrix}
 /// \\)
 #[allow(missing_docs)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Matrix
 {
     pub a:  f64,

@@ -2,6 +2,7 @@
 
 #![warn(missing_docs)]
 
+pub use self::bezier::*;
 pub use self::blitter::*;
 pub use self::canvas::*;
 pub use self::format::*;
@@ -12,6 +13,7 @@ pub use self::pixel::*;
 pub mod blitters;
 pub mod formats;
 
+mod bezier;
 mod blitter;
 mod canvas;
 mod format;

@@ -1,3 +1,4 @@
+use np_graphics::Bezier;
 use np_graphics::BlendMode;
 use np_graphics::Canvas;
 use np_graphics::Matrix;
@@ -31,25 +32,45 @@ fn main() -> Result<()>
 
     drop(fb_file);
 
-    let mut pixel_map = PixelMap::new(
-        unsafe { fb_mmap.as_mut::<[u8; 4]>() },
-        1024,
-        768,
-    ).unwrap();
+    loop {
 
-    draw_wallpaper(&mut pixel_map);
+        let dur = std::time::Duration::from_secs(1);
+        std::thread::sleep(dur);
 
-    let mut canvas = PixelMapCanvas::new(Bgra8888, pixel_map);
+        let mut pixel_map = PixelMap::new(
+            unsafe { fb_mmap.as_mut::<[u8; 4]>() },
+            1024,
+            768,
+        ).unwrap();
 
-    canvas.rectangle(
-        Matrix::from_scale(2.0, 2.0),
-        Vector{x: 0.0, y: 0.0},
-        Vector{x: 512.0, y: 24.0},
-        Paint{
-            blend_mode: BlendMode::Source,
-            pixel: [0xFF, 0x00, 0xFF, 0xFF],
-        },
-    );
+        draw_wallpaper(&mut pixel_map);
 
-    Ok(())
+        let mut canvas = PixelMapCanvas::new(Bgra8888, pixel_map);
+
+        canvas.rectangle(
+            Matrix::from_scale(2.0, 2.0),
+            Vector{x: 0.0, y: 0.0},
+            Vector{x: 512.0, y: 24.0},
+            Paint{
+                blend_mode: BlendMode::Source,
+                pixel: [0xFF, 0x00, 0xFF, 0xFF],
+            },
+        );
+
+        let bezier = Bezier::Cubic(
+            Vector{x: 0.0, y: 100.0},
+            Vector{x: 10.0, y: 0.0},
+            Vector{x: 200.0, y: 20.0},
+            Vector{x: 100.0, y: 100.0},
+        );
+        canvas.bezier(
+            Matrix::from_scale(2.0, 2.0),
+            bezier,
+            Paint{
+                blend_mode: BlendMode::Source,
+                pixel: [0xFF, 0xFF, 0xFF, 0xFF],
+            },
+        );
+
+    }
 }
