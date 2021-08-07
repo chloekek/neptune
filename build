@@ -16,6 +16,11 @@ use IPC::System::Simple qw(capturex runx);
 # and will be symlinked into /bin in the rootfs.
 my @nix_executables = split(/ /, $ENV{NP_NIX_EXECUTABLES});
 
+# Fonts built using Nix.
+# These are provided by shell.nix,
+# and will be symlinked into /fonts in the rootfs.
+my @nix_fonts = split(/ /, $ENV{NP_NIX_FONTS});
+
 # Executables not built using Nix.
 # These are built below using Cargo,
 # and will be copied into /bin in the rootfs.
@@ -86,6 +91,7 @@ say('Computing Nix closure.');
             qw{
                 grep
                 --extended-regexp
+                --no-filename
                 --only-matching
                 --text
                 /nix/store/[a-z0-9]{32}-[a-zA-Z0-9+._?=-]+
@@ -99,6 +105,7 @@ say('Computing Nix closure.');
         capturex(
             qw{nix-store --query --requisites},
             @nix_executables,
+            @nix_fonts,
             @nix_references,
         );
 
@@ -120,10 +127,10 @@ say('Building rootfs.');
         output/rootfs.dir
         output/rootfs.dir/bin
         output/rootfs.dir/dev
+        output/rootfs.dir/fonts
         output/rootfs.dir/nix
         output/rootfs.dir/nix/store
         output/rootfs.dir/proc
-        output/rootfs.dir/run
         output/rootfs.dir/sys
     });
 
@@ -137,6 +144,9 @@ say('Building rootfs.');
     # Place executables in /bin.
     runx('ln', @non_nix_executables, 'output/rootfs.dir/bin');
     runx('ln', '--symbolic', @nix_executables, 'output/rootfs.dir/bin');
+
+    # Place fonts in /fonts.
+    runx('ln', '--symbolic', @nix_fonts, 'output/rootfs.dir/fonts');
 
     # Create the ext4 image.
     runx(qw{truncate --size=100M output/rootfs.ext4});

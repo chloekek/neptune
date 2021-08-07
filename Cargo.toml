@@ -1,7 +1,9 @@
 [workspace]
 members = [
+    "np_freetype_sys",
     "np_graphics",
     "np_init",
     "np_shell",
+    "np_text",
     "np_unix",
 ]

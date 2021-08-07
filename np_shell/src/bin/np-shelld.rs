@@ -8,6 +8,8 @@ use np_graphics::PixelMapCanvas;
 use np_graphics::Vector;
 use np_graphics::formats::Bgra8888;
 use np_shell::draw_wallpaper;
+use np_text::Face;
+use np_text::Image;
 use np_unix::Mmap;
 use std::fs::OpenOptions;
 use std::io::Result;
@@ -15,6 +17,10 @@ use std::os::unix::io::AsRawFd;
 
 fn main() -> Result<()>
 {
+    let face = Face::open("/fonts/FreeSerif.ttf")?;
+    let glyph = face.glyph(75)?;
+    println!("{:?}", glyph);
+
     let fb_file =
         OpenOptions::new()
         .read(true)
@@ -57,20 +63,23 @@ fn main() -> Result<()>
             },
         );
 
-        let bezier = Bezier::Cubic(
-            Vector{x: 0.0, y: 100.0},
-            Vector{x: 10.0, y: 0.0},
-            Vector{x: 200.0, y: 20.0},
-            Vector{x: 100.0, y: 100.0},
-        );
-        canvas.bezier(
-            Matrix::from_scale(2.0, 2.0),
-            bezier,
-            Paint{
-                blend_mode: BlendMode::Source,
-                pixel: [0xFF, 0xFF, 0xFF, 0xFF],
-            },
-        );
+        let outline = match &glyph.image {
+            Image::Outline(outline) => outline,
+            _ => panic!("Expected outline glyph"),
+        };
+        for &bezier in outline {
+            canvas.bezier(
+                Matrix::IDENTITY
+                    * Matrix::from_translate(0.0, 500.0)
+                    * Matrix::from_scale(0.125, -0.125),
+                bezier,
+                16.0,
+                Paint{
+                    blend_mode: BlendMode::Source,
+                    pixel: [0xFF, 0xFF, 0xFF, 0xFF],
+                },
+            );
+        }
 
     }
 }

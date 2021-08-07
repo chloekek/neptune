@@ -1,0 +1,14 @@
+[package]
+name = "np_text"
+version = "0.0.0"
+edition = "2018"
+
+[dependencies.lazy_static]
+default-features = false
+version = "=1.4.0"
+
+[dependencies.np_freetype_sys]
+path = "../np_freetype_sys"
+
+[dependencies.np_graphics]
+path = "../np_graphics"

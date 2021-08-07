@@ -1,0 +1,11 @@
+--- freetype/include/freetype/config/ftoption.h
++++ freetype/include/freetype/config/ftoption.h
+@@ -533,7 +533,7 @@
+    *
+    *   More details can be found in the file `fterrors.h`.
+    */
+-/* #define FT_CONFIG_OPTION_ERROR_STRINGS */
++#define FT_CONFIG_OPTION_ERROR_STRINGS
+
+
+   /*************************************************************************/

@@ -37,6 +37,7 @@ pub trait Canvas
         &mut self,
         matrix: Matrix,
         bezier: Bezier,
+        thickness: f64,
         paint: Paint<Self::Pixel>,
     )
     {
@@ -47,8 +48,8 @@ pub trait Canvas
             let point = bezier.evaluate(t);
             self.rectangle(
                 matrix,
-                point,
-                Vector{x: 1.0, y: 1.0},
+                point - thickness * Vector{x: 0.5, y: 0.5},
+                thickness * Vector{x: 1.0, y: 1.0},
                 paint,
             );
         }
@@ -91,12 +92,25 @@ impl<'a, F> Canvas for PixelMapCanvas<'a, F>
     {
         // TODO: Draw rotated and skewed rectangles correctly.
 
-        let t_start = matrix * start;
-        let t_extent = matrix * (start + extent) - t_start;
+        // Transform start and extent.
+        let mut t_start = matrix * start;
+        let mut t_extent = matrix * (start + extent) - t_start;
 
+        // Make sure start comes before end.
+        if t_extent.x < 0.0 {
+            t_start.x += t_extent.x;
+            t_extent.x = -t_extent.x;
+        }
+        if t_extent.y < 0.0 {
+            t_start.y += t_extent.y;
+            t_extent.y = -t_extent.y;
+        }
+
+        // Borrow field separately.
         let format = &self.format;
         let pixel_map = &mut self.pixel_map;
 
+        // Draw rectangle using blitter.
         with_blitter(format, paint, |blitter| {
             blitter.rectangle(
                 pixel_map,
