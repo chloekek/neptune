@@ -1,4 +1,3 @@
-use cgmath::Vector2;
 use std::marker::PhantomData;
 use std::slice;
 
@@ -23,9 +22,10 @@ impl<'a, T> PixelMap<'a, T>
     /// If the number of pixels specified by `extent`
     /// does not match the number of elements in `pixels`,
     /// this function returns `None`.
-    pub fn new(pixels: &'a mut [T], extent: Vector2<u32>) -> Option<Self>
+    pub fn new(pixels: &'a mut [T], extent_x: u32, extent_y: u32)
+        -> Option<Self>
     {
-        let Vector2{x: width, y: height} = extent;
+        let (width, height) = (extent_x, extent_y);
 
         // Check that the length of the slice
         // corresponds to the width and height.
@@ -42,9 +42,9 @@ impl<'a, T> PixelMap<'a, T>
 impl<'a, T> PixelMap<'a, T>
 {
     /// The width and height of the pixel map.
-    pub fn extent(&self) -> Vector2<u32>
+    pub fn extent(&self) -> (u32, u32)
     {
-        Vector2::new(self.width, self.height)
+        (self.width, self.height)
     }
 
     /// Slice of a line segment starting at `start`
@@ -53,18 +53,18 @@ impl<'a, T> PixelMap<'a, T>
     /// The returned slice may be shorter than `length`
     /// if the line segment is (partially) out of bounds.
     /// This function does not panic on out of bounds conditions.
-    pub fn horizontal_mut(&mut self, start: Vector2<u32>, length: u32)
+    pub fn horizontal_mut(&mut self, start_x: u32, start_y: u32, length: u32)
         -> &mut [T]
     {
         // Check that the starting vertex is in bounds.
-        if start.x >= self.width { return &mut []; }
-        if start.y >= self.height { return &mut []; }
+        if start_x >= self.width { return &mut []; }
+        if start_y >= self.height { return &mut []; }
 
         // Shorten the length to fit within the bounds.
-        let length = u32::min(length, self.width - start.x);
+        let length = u32::min(length, self.width - start_x);
 
         // Compute the start and end offsets of the vertices.
-        let start_index = start.x + start.y * self.width;
+        let start_index = start_x + start_y * self.width;
         let end_index = start_index + length;
 
         // SAFETY: The indices are in bounds as per the above checks.

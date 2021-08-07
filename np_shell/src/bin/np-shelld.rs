@@ -1,5 +1,11 @@
-use cgmath::Vector2;
+use np_graphics::BlendMode;
+use np_graphics::Canvas;
+use np_graphics::Matrix;
+use np_graphics::Paint;
 use np_graphics::PixelMap;
+use np_graphics::PixelMapCanvas;
+use np_graphics::Vector;
+use np_graphics::formats::Bgra8888;
 use np_shell::draw_wallpaper;
 use np_unix::Mmap;
 use std::fs::OpenOptions;
@@ -27,10 +33,23 @@ fn main() -> Result<()>
 
     let mut pixel_map = PixelMap::new(
         unsafe { fb_mmap.as_mut::<[u8; 4]>() },
-        Vector2::new(1024, 768),
+        1024,
+        768,
     ).unwrap();
 
     draw_wallpaper(&mut pixel_map);
+
+    let mut canvas = PixelMapCanvas::new(Bgra8888, pixel_map);
+
+    canvas.rectangle(
+        Matrix::from_scale(2.0, 2.0),
+        Vector{x: 0.0, y: 0.0},
+        Vector{x: 512.0, y: 24.0},
+        Paint{
+            blend_mode: BlendMode::Source,
+            pixel: [0xFF, 0x00, 0xFF, 0xFF],
+        },
+    );
 
     Ok(())
 }

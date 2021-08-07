@@ -2,8 +2,6 @@ use crate::Blitter;
 use crate::Format;
 use crate::PixelMap;
 
-use cgmath::Vector2;
-
 /// Blitter that implements the [`SourceOver`] blend mode.
 ///
 /// [`SourceOver`]: `crate::BlendMode::SourceOver`
@@ -32,11 +30,12 @@ impl<F> Blitter for BlendSourceOverBlitter<F>
     fn horizontal(
         &self,
         map: &mut PixelMap<F::Pixel>,
-        start: Vector2<u32>,
+        start_x: u32,
+        start_y: u32,
         length: u32,
     )
     {
-        let dest = map.horizontal_mut(start, length);
+        let dest = map.horizontal_mut(start_x, start_y, length);
         self.format.blend_source_over(dest, self.pixel);
     }
 }

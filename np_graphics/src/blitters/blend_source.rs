@@ -1,8 +1,6 @@
 use crate::Blitter;
 use crate::PixelMap;
 
-use cgmath::Vector2;
-
 /// Blitter that implements the [`Source`] blend mode.
 ///
 /// [`Source`]: `crate::BlendMode::Source`
@@ -28,11 +26,12 @@ impl<T> Blitter for BlendSourceBlitter<T>
     fn horizontal(
         &self,
         map: &mut PixelMap<T>,
-        start: Vector2<u32>,
+        start_x: u32,
+        start_y: u32,
         length: u32,
     )
     {
-        let dest = map.horizontal_mut(start, length);
+        let dest = map.horizontal_mut(start_x, start_y, length);
         dest.fill(self.pixel);
     }
 }

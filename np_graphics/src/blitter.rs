@@ -4,8 +4,6 @@ use crate::Paint;
 use crate::PixelMap;
 use crate::blitters::*;
 
-use cgmath::Vector2;
-
 /// Specialized code for drawing pixels onto a pixel map.
 ///
 /// Drawing pixels is an operation that happens a lot,
@@ -29,7 +27,8 @@ pub trait Blitter
     fn horizontal(
         &self,
         map: &mut PixelMap<Self::Pixel>,
-        start: Vector2<u32>,
+        start_x: u32,
+        start_y: u32,
         length: u32,
     );
 
@@ -41,13 +40,15 @@ pub trait Blitter
     fn rectangle(
         &self,
         map: &mut PixelMap<Self::Pixel>,
-        start: Vector2<u32>,
-        extent: Vector2<u32>,
+        start_x: u32,
+        start_y: u32,
+        extent_x: u32,
+        extent_y: u32,
     )
     {
-        let end_y = u32::saturating_add(start.y, extent.y);
-        for y in start.y .. end_y {
-            self.horizontal(map, Vector2::new(start.x, y), extent.x);
+        let end_y = u32::saturating_add(start_y, extent_y);
+        for y in start_y .. end_y {
+            self.horizontal(map, start_x, y, extent_x);
         }
     }
 }

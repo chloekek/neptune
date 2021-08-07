@@ -41,3 +41,24 @@ pub trait Format
     /// [`SourceOver`]: `crate::BlendMode::SourceOver`
     fn blend_source_over(&self, dest: &mut [Self::Pixel], source: Self::Pixel);
 }
+
+impl<'a, F> Format for &'a F
+    where F: Format
+{
+    type Pixel = F::Pixel;
+
+    fn is_visible(&self, pixel: Self::Pixel) -> bool
+    {
+        (**self).is_visible(pixel)
+    }
+
+    fn is_opaque(&self, pixel: Self::Pixel) -> bool
+    {
+        (**self).is_opaque(pixel)
+    }
+
+    fn blend_source_over(&self, dest: &mut [Self::Pixel], source: Self::Pixel)
+    {
+        (**self).blend_source_over(dest, source)
+    }
+}

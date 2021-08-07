@@ -1,7 +1,6 @@
 use crate::Blitter;
 use crate::PixelMap;
 
-use cgmath::Vector2;
 use std::marker::PhantomData;
 
 /// Blitter that implements the [`Destination`] blend mode.
@@ -29,7 +28,8 @@ impl<T> Blitter for BlendDestinationBlitter<T>
     fn horizontal(
         &self,
         _map: &mut PixelMap<T>,
-        _start: Vector2<u32>,
+        _start_x: u32,
+        _start_y: u32,
         _length: u32,
     )
     {
@@ -38,8 +38,10 @@ impl<T> Blitter for BlendDestinationBlitter<T>
     fn rectangle(
         &self,
         _map: &mut PixelMap<Self::Pixel>,
-        _start: Vector2<u32>,
-        _extent: Vector2<u32>,
+        _start_x: u32,
+        _start_y: u32,
+        _extent_x: u32,
+        _extent_y: u32,
     )
     {
     }
