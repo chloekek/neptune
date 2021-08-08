@@ -2,18 +2,18 @@
 
 #![warn(missing_docs)]
 
-pub use self::bezier::*;
 pub use self::blitter::*;
 pub use self::canvas::*;
 pub use self::format::*;
 pub use self::linalg::*;
 pub use self::paint::*;
+pub use self::path::PathBuf;
 pub use self::pixel::*;
 
 pub mod blitters;
 pub mod formats;
+pub mod path;
 
-mod bezier;
 mod blitter;
 mod canvas;
 mod format;

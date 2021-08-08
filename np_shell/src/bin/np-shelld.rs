@@ -1,4 +1,3 @@
-use np_graphics::Bezier;
 use np_graphics::BlendMode;
 use np_graphics::Canvas;
 use np_graphics::Matrix;
@@ -18,8 +17,14 @@ use std::os::unix::io::AsRawFd;
 fn main() -> Result<()>
 {
     let face = Face::open("/fonts/FreeSerif.ttf")?;
-    let glyph = face.glyph(75)?;
-    println!("{:?}", glyph);
+    let glyph_h = face.glyph(76)?;
+    let glyph_a = face.glyph(69)?;
+    let glyph_l = face.glyph(80)?;
+    let glyph_o = face.glyph(83)?;
+    println!("{:?}", glyph_h);
+    println!("{:?}", glyph_a);
+    println!("{:?}", glyph_l);
+    println!("{:?}", glyph_o);
 
     let fb_file =
         OpenOptions::new()
@@ -63,22 +68,28 @@ fn main() -> Result<()>
             },
         );
 
-        let outline = match &glyph.image {
-            Image::Outline(outline) => outline,
-            _ => panic!("Expected outline glyph"),
-        };
-        for &bezier in outline {
-            canvas.bezier(
+        let scale = 1.0 / 100.0;
+        let mut offset = 100.0;
+        for glyph in &[&glyph_h, &glyph_a, &glyph_l, &glyph_l, &glyph_o] {
+
+            let outline = match &glyph.image {
+                Image::Outline(outline) => outline,
+                _ => panic!("Expected outline glyph"),
+            };
+
+            canvas.path(
                 Matrix::IDENTITY
-                    * Matrix::from_translate(0.0, 500.0)
-                    * Matrix::from_scale(0.125, -0.125),
-                bezier,
-                16.0,
+                    * Matrix::from_translate(offset, 500.0)
+                    * Matrix::from_scale(1.0 * scale, -1.0 * scale),
+                outline.instructions(),
                 Paint{
                     blend_mode: BlendMode::Source,
                     pixel: [0xFF, 0xFF, 0xFF, 0xFF],
                 },
             );
+
+            offset += glyph.advance_x * scale;
+
         }
 
     }

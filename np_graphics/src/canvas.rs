@@ -1,9 +1,11 @@
-use crate::Bezier;
 use crate::Format;
 use crate::Matrix;
 use crate::Paint;
 use crate::PixelMap;
 use crate::Vector;
+use crate::path::Instruction;
+use crate::path::bezier_cubic;
+use crate::path::bezier_quadratic;
 use crate::with_blitter;
 
 /// High-level interface for drawing shapes.
@@ -28,32 +30,17 @@ pub trait Canvas
         paint: Paint<Self::Pixel>,
     );
 
-    /// Draw a single Bézier curve,
+    /// Draw a filled path starting at the origin
     /// transformed with the given matrix.
     ///
-    /// The provided implementation samples the Bézier curve
-    /// and draws a 1×1 rectangle at each sample.
-    fn bezier(
+    /// To start the path elsewhere, provide a translation matrix
+    /// or make sure the path begins with a move instruction.
+    fn path<P: IntoIterator<Item=Instruction>>(
         &mut self,
         matrix: Matrix,
-        bezier: Bezier,
-        thickness: f64,
+        path: P,
         paint: Paint<Self::Pixel>,
-    )
-    {
-        // FIXME: This algorithm is very bad.
-        let samples = 100;
-        for i in 0 .. samples {
-            let t = i as f64 / samples as f64;
-            let point = bezier.evaluate(t);
-            self.rectangle(
-                matrix,
-                point - thickness * Vector{x: 0.5, y: 0.5},
-                thickness * Vector{x: 1.0, y: 1.0},
-                paint,
-            );
-        }
-    }
+    );
 }
 
 /// Canvas that draws onto a pixel map.
@@ -106,7 +93,7 @@ impl<'a, F> Canvas for PixelMapCanvas<'a, F>
             t_extent.y = -t_extent.y;
         }
 
-        // Borrow field separately.
+        // Borrow fields separately.
         let format = &self.format;
         let pixel_map = &mut self.pixel_map;
 
@@ -119,6 +106,75 @@ impl<'a, F> Canvas for PixelMapCanvas<'a, F>
                 t_extent.x as u32,
                 t_extent.y as u32,
             );
+        });
+    }
+
+    fn path<P: IntoIterator<Item=Instruction>>(
+        &mut self,
+        matrix: Matrix,
+        path: P,
+        paint: Paint<Self::Pixel>,
+    )
+    {
+        // TODO: Fill the path instead of drawing the outline only. :P
+
+        // Borrow fields separately.
+        let format = &self.format;
+        let pixel_map = &mut self.pixel_map;
+
+        // Draw using the blitter for this paint.
+        with_blitter(format, paint, |blitter| {
+
+            // The Bézier curves will be divided into line segments.
+            // The line segments are drawn using the blitter.
+            let mut line_segment = |p0: Vector, p1: Vector| {
+                blitter.line_segment(
+                    pixel_map,
+                    p0.x as u32,
+                    p0.y as u32,
+                    p1.x as u32,
+                    p1.y as u32,
+                );
+            };
+
+            // Keep track of the p0 point across iterations.
+            // After each iteraiton, this is moved to
+            // the end point of each Bézier curve.
+            let mut p0 = Vector{x: 0.0, y: 0.0};
+
+            // Perform each instruction.
+            for instruction in path {
+
+                // Apply the matrix to each point in the instruction.
+                // As far as I know this works as expected
+                // with Bézier control points.
+                let instruction = matrix * instruction;
+
+                match instruction {
+                    Instruction::Move(to) => {
+                        p0 = to;
+                    },
+                    Instruction::Linear(p1) => {
+                        line_segment(p0, p1);
+                        p0 = p1;
+                    },
+                    Instruction::Quadratic(p1, p2) => {
+                        // TODO: Smarter heuristics to generate line segments.
+                        let half = bezier_quadratic(p0, p1, p2, 0.5);
+                        line_segment(p0, half);
+                        line_segment(half, p2);
+                        p0 = p2;
+                    },
+                    Instruction::Cubic(p1, p2, p3) => {
+                        // TODO: Smarter heuristics to generate line segments.
+                        let half = bezier_cubic(p0, p1, p2, p3, 0.5);
+                        line_segment(p0, half);
+                        line_segment(half, p3);
+                        p0 = p3;
+                    },
+                }
+            }
+
         });
     }
 }

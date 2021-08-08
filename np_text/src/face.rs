@@ -4,7 +4,7 @@ use crate::LIBRARY;
 use crate::freetype;
 
 use np_freetype_sys::*;
-use np_graphics::Bezier;
+use np_graphics::PathBuf;
 use np_graphics::Vector;
 use std::cell::UnsafeCell;
 use std::ffi::CString;
@@ -51,6 +51,8 @@ impl Face
         inner.load_glyph(index, 0)?;
         let glyph_slot = inner.glyph();
 
+        let advance_x = glyph_slot.metrics.horiAdvance as f64;
+
         let image = match glyph_slot.format {
             FT_GLYPH_FORMAT_OUTLINE =>
                 // SAFETY: We now know this is an outline image.
@@ -58,16 +60,12 @@ impl Face
             _ => todo!("Non-outline glyph formats"),
         };
 
-        Ok(Glyph{image})
+        Ok(Glyph{advance_x, image})
     }
 }
 
 /// Used as the state for a call to FT_Outline_Decompose.
-struct OutlineDecomposeState
-{
-    start: FT_Vector,
-    contours: Vec<Bezier>,
-}
+type OutlineDecomposeState = PathBuf;
 
 unsafe fn image_from_ft_outline(ft_outline: &mut FT_Outline)
     -> Result<Image>
@@ -78,10 +76,7 @@ unsafe fn image_from_ft_outline(ft_outline: &mut FT_Outline)
     // line segments as first-order Bézier curves,
     // so this will extract all contours as Bézier curves.
 
-    let mut state = OutlineDecomposeState{
-        start: FT_Vector{x: 0, y: 0},
-        contours: Vec::with_capacity(ft_outline.n_contours as usize),
-    };
+    let mut state = PathBuf::new();
 
     let status = FT_Outline_Decompose(
         ft_outline,
@@ -97,7 +92,7 @@ unsafe fn image_from_ft_outline(ft_outline: &mut FT_Outline)
     );
     freetype::Error::new(status)?;
 
-    Ok(Image::Outline(state.contours))
+    Ok(Image::Outline(state))
 }
 
 unsafe extern "C" fn image_from_ft_outline_move_to(
@@ -106,8 +101,9 @@ unsafe extern "C" fn image_from_ft_outline_move_to(
 ) -> c_int
 {
     let user = &mut *(user as *mut OutlineDecomposeState);
-
-    user.start = *to;
+    user.push_move(
+        convert_vector(*to),
+    );
     0
 }
 
@@ -117,14 +113,9 @@ unsafe extern "C" fn image_from_ft_outline_line_to(
 ) -> c_int
 {
     let user = &mut *(user as *mut OutlineDecomposeState);
-
-    let bezier = Bezier::Linear(
-        convert_vector(user.start),
+    user.push_linear(
         convert_vector(*to),
     );
-    user.contours.push(bezier);
-
-    user.start = *to;
     0
 }
 
@@ -135,15 +126,10 @@ unsafe extern "C" fn image_from_ft_outline_conic_to(
 ) -> c_int
 {
     let user = &mut *(user as *mut OutlineDecomposeState);
-
-    let bezier = Bezier::Conic(
-        convert_vector(user.start),
+    user.push_quadratic(
         convert_vector(*control),
         convert_vector(*to),
     );
-    user.contours.push(bezier);
-
-    user.start = *to;
     0
 }
 
@@ -155,16 +141,11 @@ unsafe extern "C" fn image_from_ft_outline_cubic_to(
 ) -> c_int
 {
     let user = &mut *(user as *mut OutlineDecomposeState);
-
-    let bezier = Bezier::Cubic(
-        convert_vector(user.start),
+    user.push_cubic(
         convert_vector(*control1),
         convert_vector(*control2),
         convert_vector(*to),
     );
-    user.contours.push(bezier);
-
-    user.start = *to;
     0
 }
 

@@ -51,6 +51,49 @@ pub trait Blitter
             self.horizontal(map, start_x, y, extent_x);
         }
     }
+
+    /// Draw a line segment starting at `start` and ending at `end`.
+    ///
+    /// The provided implementation uses Bresenham’s line algorithm,
+    /// calling [`Blitter::horizontal`] with length 1 for each pixel.
+    fn line_segment(
+        &self,
+        map: &mut PixelMap<Self::Pixel>,
+        start_x: u32,
+        start_y: u32,
+        end_x: u32,
+        end_y: u32
+    )
+    {
+        // Bresenham’s line algorithm.
+
+        let mut x0 = start_x as i64;
+        let mut y0 = start_y as i64;
+        let x1 = end_x as i64;
+        let y1 = end_y as i64;
+
+        let dx = i64::abs(x1 - x0);
+        let sx = if x0 < x1 { 1 } else { -1 };
+        let dy = -i64::abs(y1 - y0);
+        let sy = if y0 < y1 { 1 } else { -1 };
+        let mut err = dx + dy;
+
+        loop {
+            self.horizontal(map, x0 as u32, y0 as u32, 1);
+            if x0 == x1 && y0 == y1 {
+                break;
+            }
+            let e2 = 2 * err;
+            if e2 >= dy {
+                err += dy;
+                x0 += sx;
+            }
+            if e2 <= dx {
+                err += dx;
+                y0 += sy;
+            }
+        }
+    }
 }
 
 /// Common implementation for [`create_blitter`] and [`with_blitter`].

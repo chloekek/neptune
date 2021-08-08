@@ -13,7 +13,7 @@ use std::ops;
 /// \end{bmatrix}
 /// \\)
 #[allow(missing_docs)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Vector
 {
     pub x: f64,
@@ -42,6 +42,19 @@ impl ops::Sub<Vector> for Vector
         Vector{
             x: self.x - rhs.x,
             y: self.y - rhs.y,
+        }
+    }
+}
+
+impl ops::Sub<f64> for Vector
+{
+    type Output = Vector;
+
+    fn sub(self, rhs: f64) -> Self::Output
+    {
+        Vector{
+            x: self.x - rhs,
+            y: self.y - rhs,
         }
     }
 }
