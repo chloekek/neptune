@@ -2,3 +2,8 @@
 name = "np_graphics"
 version = "0.0.0"
 edition = "2018"
+
+[dev-dependencies.proptest]
+default-features = false
+features = [ "std" ]
+version = "=1.0.0"
