@@ -57,3 +57,9 @@ impl Drop for Mmap
         unsafe { libc::munmap(self.addr, self.length); }
     }
 }
+
+// SAFETY: There is nothing restricting you from using
+// SAFETY: mapped memory from a different thread.
+unsafe impl Send for Mmap
+{
+}

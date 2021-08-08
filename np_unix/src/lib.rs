@@ -7,12 +7,18 @@
 //! For convenience, this crate also provides a C string literal macro.
 //! This can be used for creating literal string arguments to system calls.
 
+pub use self::fcntl::*;
+pub use self::ftruncate::*;
+pub use self::memfd::*;
 pub use self::mmap::*;
 pub use self::mount::*;
 pub use self::signalfd::*;
 pub use self::sigprocmask::*;
 pub use self::sigset::*;
 
+mod fcntl;
+mod ftruncate;
+mod memfd;
 mod mmap;
 mod mount;
 mod signalfd;

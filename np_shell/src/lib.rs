@@ -1,3 +1,13 @@
+#![warn(missing_docs)]
+
+pub use self::app_info::*;
+pub use self::running_app::*;
+pub use self::running_apps::*;
+
+mod app_info;
+mod running_app;
+mod running_apps;
+
 use np_graphics::Blitter;
 use np_graphics::PixelMap;
 use np_graphics::blitters::BlendSourceBlitter;

@@ -6,6 +6,7 @@ use np_graphics::PixelMap;
 use np_graphics::PixelMapCanvas;
 use np_graphics::Vector;
 use np_graphics::formats::Bgra8888;
+use np_shell::RunningApps;
 use np_shell::draw_wallpaper;
 use np_text::Face;
 use np_text::Image;
@@ -16,6 +17,15 @@ use std::os::unix::io::AsRawFd;
 
 fn main() -> Result<()>
 {
+    let running_apps = RunningApps::new();
+
+    let mut pollfds = Vec::new();
+
+    pollfds.extend(
+        running_apps.sockets()
+        .map(|fd| libc::pollfd{fd, events: libc::POLLIN, revents: 0})
+    );
+
     let face = Face::open("/fonts/FreeSerif.ttf")?;
     let glyph_h = face.glyph(76)?;
     let glyph_a = face.glyph(69)?;
