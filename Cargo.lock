@@ -55,6 +55,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "np_gui"
+version = "0.0.0"
+dependencies = [
+ "np_graphics",
+]
+
+[[package]]
 name = "np_init"
 version = "0.0.0"
 dependencies = [

@@ -1,6 +1,7 @@
 use crate::Format;
 use crate::Matrix;
 use crate::Paint;
+use crate::PathBuf;
 use crate::PixelMap;
 use crate::Vector;
 use crate::path::Instruction;
@@ -35,10 +36,10 @@ pub trait Canvas
     ///
     /// To start the path elsewhere, provide a translation matrix
     /// or make sure the path begins with a move instruction.
-    fn path<P: IntoIterator<Item=Instruction>>(
+    fn path(
         &mut self,
         matrix: Matrix,
-        path: P,
+        path: &PathBuf,
         paint: Paint<Self::Pixel>,
     );
 }
@@ -109,10 +110,10 @@ impl<'a, F> Canvas for PixelMapCanvas<'a, F>
         });
     }
 
-    fn path<P: IntoIterator<Item=Instruction>>(
+    fn path(
         &mut self,
         matrix: Matrix,
-        path: P,
+        path: &PathBuf,
         paint: Paint<Self::Pixel>,
     )
     {
@@ -143,7 +144,7 @@ impl<'a, F> Canvas for PixelMapCanvas<'a, F>
             let mut p0 = Vector{x: 0.0, y: 0.0};
 
             // Perform each instruction.
-            for instruction in path {
+            for instruction in path.instructions() {
 
                 // Apply the matrix to each point in the instruction.
                 // As far as I know this works as expected

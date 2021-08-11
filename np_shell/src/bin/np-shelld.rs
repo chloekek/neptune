@@ -93,7 +93,7 @@ fn main() -> Result<()>
                 Matrix::IDENTITY
                     * Matrix::from_translate(offset, 500.0)
                     * Matrix::from_scale(1.0 * scale, -1.0 * scale),
-                outline.instructions(),
+                outline,
                 Paint{
                     blend_mode: BlendMode::Source,
                     pixel: [0xFF, 0xFF, 0xFF, 0xFF],
