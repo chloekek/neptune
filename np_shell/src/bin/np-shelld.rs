@@ -26,7 +26,7 @@ fn main() -> Result<()>
         .map(|fd| libc::pollfd{fd, events: libc::POLLIN, revents: 0})
     );
 
-    let font_file = unsafe { FontFile::open_mapped("/fonts/FreeSerif.ttf")? };
+    let font_file = FontFile::open_mapped("/fonts/FreeSerif.ttf")?;
     let typeface = font_file.typeface(0).unwrap();
     let glyph_h = typeface.glyph(76).unwrap();
     let glyph_a = typeface.glyph(69).unwrap();

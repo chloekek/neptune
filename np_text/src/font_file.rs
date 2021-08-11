@@ -43,14 +43,7 @@ impl FontFile
     ///
     /// The font file is not immediately parsed.
     /// Parsing happens whenever features are accessed.
-    ///
-    /// # Safety
-    ///
-    /// It is paramount that the font file is not
-    /// modified concurrently with the program.
-    /// Only open files that are read-only
-    /// and will remain read-only.
-    pub unsafe fn open_mapped<P>(path: P) -> io::Result<Self>
+    pub fn open_mapped<P>(path: P) -> io::Result<Self>
         where P: AsRef<Path>
     {
         let file = File::open(path)?;
@@ -58,7 +51,7 @@ impl FontFile
         let mmap = Mmap::mmap(
             length as usize,
             libc::PROT_READ,
-            libc::MAP_PRIVATE,
+            libc::MAP_PRIVATE | libc::MAP_POPULATE,
             file.as_raw_fd(),
             /* offset */ 0,
         )?;
@@ -71,7 +64,10 @@ impl FontFile
             Inner::Vec(vec) =>
                 vec,
             Inner::Mmap(mmap) =>
-                // SAFETY: Guaranteed by safety contract for open_mapped.
+                // SAFETY:
+                // open_mapped uses MAP_POPULATE,
+                // so concurrent actors modifying the file
+                // will not affect our mapping.
                 unsafe { mmap.as_ref() },
         }
     }
