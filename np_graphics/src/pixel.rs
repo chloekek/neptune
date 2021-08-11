@@ -6,8 +6,9 @@ pub struct PixelMap<'a, T>
 {
     _slice: PhantomData<&'a mut [T]>,
     pixels: *mut T,
-    width: u32,
-    height: u32,
+    pitch: u32,
+    extent_x: u32,
+    extent_y: u32,
 }
 
 unsafe impl<'a, T> Send for PixelMap<'a, T>
@@ -19,23 +20,34 @@ impl<'a, T> PixelMap<'a, T>
 {
     /// Create a pixel map from a slice of pixels.
     ///
-    /// If the number of pixels specified by `extent`
+    /// The value of `pitch` is the number of pixels per row.
+    /// This may be longer than the value of `extent_x`,
+    /// in case a rectangular slice of the pixel buffer is taken.
+    /// If the number of pixels `pitch * extent_y`
     /// does not match the number of elements in `pixels`,
     /// this function returns `None`.
-    pub fn new(pixels: &'a mut [T], extent_x: u32, extent_y: u32)
-        -> Option<Self>
+    pub fn new(
+        pixels: &'a mut [T],
+        pitch: u32,
+        extent_x: u32,
+        extent_y: u32,
+    ) -> Option<Self>
     {
-        let (width, height) = (extent_x, extent_y);
+        // Check that the pitch is not shorter than the extent.
+        // That would be very bad and cause out of bounds access.
+        if extent_x > pitch {
+            return None;
+        }
 
         // Check that the length of the slice
         // corresponds to the width and height.
-        let expected_len = u32::checked_mul(width, height)? as usize;
+        let expected_len = u32::checked_mul(pitch, extent_y)? as usize;
         let len_as_expected = pixels.len() == expected_len;
         if !len_as_expected { return None; }
 
         // Construct slice blitter.
         let pixels = pixels.as_mut_ptr();
-        Some(Self{_slice: PhantomData, pixels, width, height})
+        Some(Self{_slice: PhantomData, pixels, pitch, extent_x, extent_y})
     }
 }
 
@@ -44,7 +56,7 @@ impl<'a, T> PixelMap<'a, T>
     /// The width and height of the pixel map.
     pub fn extent(&self) -> (u32, u32)
     {
-        (self.width, self.height)
+        (self.extent_x, self.extent_y)
     }
 
     /// Slice of a line segment starting at `start`
@@ -57,14 +69,14 @@ impl<'a, T> PixelMap<'a, T>
         -> &mut [T]
     {
         // Check that the starting vertex is in bounds.
-        if start_x >= self.width { return &mut []; }
-        if start_y >= self.height { return &mut []; }
+        if start_x >= self.extent_x { return &mut []; }
+        if start_y >= self.extent_y { return &mut []; }
 
         // Shorten the length to fit within the bounds.
-        let length = u32::min(length, self.width - start_x);
+        let length = u32::min(length, self.extent_x - start_x);
 
         // Compute the start and end offsets of the vertices.
-        let start_index = start_x + start_y * self.width;
+        let start_index = start_x + start_y * self.pitch;
         let end_index = start_index + length;
 
         // SAFETY: The indices are in bounds as per the above checks.

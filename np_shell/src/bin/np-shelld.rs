@@ -62,6 +62,7 @@ fn main() -> Result<()>
         let mut pixel_map = PixelMap::new(
             unsafe { fb_mmap.as_mut::<[u8; 4]>() },
             1024,
+            1024,
             768,
         ).unwrap();
 
