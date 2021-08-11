@@ -3,12 +3,16 @@ name = "np_text"
 version = "0.0.0"
 edition = "2018"
 
-[dependencies.lazy_static]
+[dependencies.libc]
 default-features = false
-version = "=1.4.0"
-
-[dependencies.np_freetype_sys]
-path = "../np_freetype_sys"
+version = "=0.2.98"
 
 [dependencies.np_graphics]
 path = "../np_graphics"
+
+[dependencies.np_unix]
+path = "../np_unix"
+
+[dependencies.ttf-parser]
+default-features = false
+version = "=0.12.3"

@@ -8,7 +8,7 @@ use np_graphics::Vector;
 use np_graphics::formats::Bgra8888;
 use np_shell::RunningApps;
 use np_shell::draw_wallpaper;
-use np_text::Face;
+use np_text::FontFile;
 use np_text::Image;
 use np_unix::Mmap;
 use std::fs::OpenOptions;
@@ -26,11 +26,12 @@ fn main() -> Result<()>
         .map(|fd| libc::pollfd{fd, events: libc::POLLIN, revents: 0})
     );
 
-    let face = Face::open("/fonts/FreeSerif.ttf")?;
-    let glyph_h = face.glyph(76)?;
-    let glyph_a = face.glyph(69)?;
-    let glyph_l = face.glyph(80)?;
-    let glyph_o = face.glyph(83)?;
+    let font_file = unsafe { FontFile::open_mapped("/fonts/FreeSerif.ttf")? };
+    let typeface = font_file.typeface(0).unwrap();
+    let glyph_h = typeface.glyph(76).unwrap();
+    let glyph_a = typeface.glyph(69).unwrap();
+    let glyph_l = typeface.glyph(80).unwrap();
+    let glyph_o = typeface.glyph(83).unwrap();
     println!("{:?}", glyph_h);
     println!("{:?}", glyph_a);
     println!("{:?}", glyph_l);
@@ -78,7 +79,7 @@ fn main() -> Result<()>
             },
         );
 
-        let scale = 1.0 / 100.0;
+        let scale = 1.0 / 25.0;
         let mut offset = 100.0;
         for glyph in &[&glyph_h, &glyph_a, &glyph_l, &glyph_l, &glyph_o] {
 

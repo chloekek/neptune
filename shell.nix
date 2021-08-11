@@ -5,29 +5,14 @@ let
     # Create a wrapped Perl in which these are available.
     perlPackages = p: [ p.IPCSystemSimple ];
     perl = nixpkgs.perl.withPackages perlPackages;
-
-    # We want to build FreeType with additional options.
-    freetype = nixpkgs.freetype.overrideAttrs (old: {
-        patches = old.patches ++ [
-            # FreeType is configurable through a header file.
-            # We modify the header file by applying a patch.
-            tools/freetype-ftoption.patch
-        ];
-    });
 in
     nixpkgs.mkShell {
         nativeBuildInputs = [
-            nixpkgs.cargo        # Used for building Rust crates.
-            nixpkgs.e2fsprogs    # Used for creating rootfs.
-            nixpkgs.nix          # Used for building Linux.
-            nixpkgs.qemu         # Used for testing in a virtual machine.
-            nixpkgs.rust-bindgen # Used for generating Rust from C headers.
-            nixpkgs.rustfmt      # Used by bindgen only.
-            perl                 # The build script is written in Perl.
-        ];
-
-        buildInputs = [
-            freetype # Used for accessing font data.
+            nixpkgs.cargo     # Used for building Rust crates.
+            nixpkgs.e2fsprogs # Used for creating rootfs.
+            nixpkgs.nix       # Used for building Linux.
+            nixpkgs.qemu      # Used for testing in a virtual machine.
+            perl              # The build script is written in Perl.
         ];
 
         # These executables need to be available to the build script,

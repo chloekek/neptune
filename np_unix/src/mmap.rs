@@ -41,6 +41,23 @@ impl Mmap
     ///  - The data must be in a suitable representation of `T`.
     ///  - Beware that the data may be changed from other processes
     ///    without any synchronization.
+    pub unsafe fn as_ref<T>(&self) -> &[T]
+    {
+        slice::from_raw_parts(
+            self.addr as *const T,
+            self.length / size_of::<T>(),
+        )
+    }
+
+    /// The mapped memory as a slice.
+    ///
+    /// # Safety
+    ///
+    ///  - The mapped memory must be suitably aligned for `T`.
+    ///    This is almost always the case as page alignment is huge.
+    ///  - The data must be in a suitable representation of `T`.
+    ///  - Beware that the data may be changed from other processes
+    ///    without any synchronization.
     pub unsafe fn as_mut<T>(&mut self) -> &mut [T]
     {
         slice::from_raw_parts_mut(
