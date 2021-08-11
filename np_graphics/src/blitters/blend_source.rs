@@ -1,5 +1,5 @@
 use crate::Blitter;
-use crate::PixelMap;
+use crate::PixelMapMut;
 
 /// Blitter that implements the [`Source`] blend mode.
 ///
@@ -25,7 +25,7 @@ impl<T> Blitter for BlendSourceBlitter<T>
 
     fn horizontal(
         &self,
-        map: &mut PixelMap<T>,
+        map: &mut PixelMapMut<T>,
         start_x: u32,
         start_y: u32,
         length: u32,

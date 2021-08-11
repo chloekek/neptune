@@ -1,7 +1,7 @@
 use crate::BlendMode;
 use crate::Format;
 use crate::Paint;
-use crate::PixelMap;
+use crate::PixelMapMut;
 use crate::blitters::*;
 
 /// Specialized code for drawing pixels onto a pixel map.
@@ -26,7 +26,7 @@ pub trait Blitter
     /// and extending `length` pixels to the right.
     fn horizontal(
         &self,
-        map: &mut PixelMap<Self::Pixel>,
+        map: &mut PixelMapMut<Self::Pixel>,
         start_x: u32,
         start_y: u32,
         length: u32,
@@ -39,7 +39,7 @@ pub trait Blitter
     /// for each Y coordinate in the start–extent range.
     fn rectangle(
         &self,
-        map: &mut PixelMap<Self::Pixel>,
+        map: &mut PixelMapMut<Self::Pixel>,
         start_x: u32,
         start_y: u32,
         extent_x: u32,
@@ -58,7 +58,7 @@ pub trait Blitter
     /// calling [`Blitter::horizontal`] with length 1 for each pixel.
     fn line_segment(
         &self,
-        map: &mut PixelMap<Self::Pixel>,
+        map: &mut PixelMapMut<Self::Pixel>,
         start_x: u32,
         start_y: u32,
         end_x: u32,

@@ -1,5 +1,5 @@
 use crate::Blitter;
-use crate::PixelMap;
+use crate::PixelMapMut;
 
 use std::marker::PhantomData;
 
@@ -27,7 +27,7 @@ impl<T> Blitter for BlendDestinationBlitter<T>
 
     fn horizontal(
         &self,
-        _map: &mut PixelMap<T>,
+        _map: &mut PixelMapMut<T>,
         _start_x: u32,
         _start_y: u32,
         _length: u32,
@@ -37,7 +37,7 @@ impl<T> Blitter for BlendDestinationBlitter<T>
 
     fn rectangle(
         &self,
-        _map: &mut PixelMap<Self::Pixel>,
+        _map: &mut PixelMapMut<Self::Pixel>,
         _start_x: u32,
         _start_y: u32,
         _extent_x: u32,

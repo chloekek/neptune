@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use std::slice;
 
 /// Mutable reference to a 2D array.
-pub struct PixelMap<'a, T>
+pub struct PixelMapMut<'a, T>
 {
     _slice: PhantomData<&'a mut [T]>,
     pixels: *mut T,
@@ -11,12 +11,12 @@ pub struct PixelMap<'a, T>
     extent_y: u32,
 }
 
-unsafe impl<'a, T> Send for PixelMap<'a, T>
+unsafe impl<'a, T> Send for PixelMapMut<'a, T>
     where T: Send
 {
 }
 
-impl<'a, T> PixelMap<'a, T>
+impl<'a, T> PixelMapMut<'a, T>
 {
     /// Create a pixel map from a slice of pixels.
     ///
@@ -51,7 +51,7 @@ impl<'a, T> PixelMap<'a, T>
     }
 }
 
-impl<'a, T> PixelMap<'a, T>
+impl<'a, T> PixelMapMut<'a, T>
 {
     /// The width and height of the pixel map.
     pub fn extent(&self) -> (u32, u32)

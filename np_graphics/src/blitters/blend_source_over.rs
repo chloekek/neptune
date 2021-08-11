@@ -1,6 +1,6 @@
 use crate::Blitter;
 use crate::Format;
-use crate::PixelMap;
+use crate::PixelMapMut;
 
 /// Blitter that implements the [`SourceOver`] blend mode.
 ///
@@ -29,7 +29,7 @@ impl<F> Blitter for BlendSourceOverBlitter<F>
 
     fn horizontal(
         &self,
-        map: &mut PixelMap<F::Pixel>,
+        map: &mut PixelMapMut<F::Pixel>,
         start_x: u32,
         start_y: u32,
         length: u32,

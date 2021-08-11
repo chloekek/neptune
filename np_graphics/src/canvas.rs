@@ -1,7 +1,7 @@
 use crate::Format;
 use crate::Matrix;
 use crate::Paint;
-use crate::PixelMap;
+use crate::PixelMapMut;
 use crate::Vector;
 use crate::path::Instruction;
 use crate::path::bezier_cubic;
@@ -51,14 +51,14 @@ pub struct PixelMapCanvas<'a, F>
     where F: Format
 {
     format: F,
-    pixel_map: PixelMap<'a, F::Pixel>,
+    pixel_map: PixelMapMut<'a, F::Pixel>,
 }
 
 impl<'a, F> PixelMapCanvas<'a, F>
     where F: Format
 {
     /// Create a new canvas.
-    pub fn new(format: F, pixel_map: PixelMap<'a, F::Pixel>) -> Self
+    pub fn new(format: F, pixel_map: PixelMapMut<'a, F::Pixel>) -> Self
     {
         Self{format, pixel_map}
     }

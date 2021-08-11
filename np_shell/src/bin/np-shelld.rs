@@ -2,7 +2,7 @@ use np_graphics::BlendMode;
 use np_graphics::Canvas;
 use np_graphics::Matrix;
 use np_graphics::Paint;
-use np_graphics::PixelMap;
+use np_graphics::PixelMapMut;
 use np_graphics::PixelMapCanvas;
 use np_graphics::Vector;
 use np_graphics::formats::Bgra8888;
@@ -59,7 +59,7 @@ fn main() -> Result<()>
         let dur = std::time::Duration::from_secs(1);
         std::thread::sleep(dur);
 
-        let mut pixel_map = PixelMap::new(
+        let mut pixel_map = PixelMapMut::new(
             unsafe { fb_mmap.as_mut::<[u8; 4]>() },
             1024,
             1024,
