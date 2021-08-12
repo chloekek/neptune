@@ -48,6 +48,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320cfe77175da3a483efed4bc0adc1968ca050b098ce4f2f1c13a56626128790"
 
 [[package]]
+name = "np_composite"
+version = "0.0.0"
+dependencies = [
+ "np_graphics",
+]
+
+[[package]]
 name = "np_graphics"
 version = "0.0.0"
 dependencies = [

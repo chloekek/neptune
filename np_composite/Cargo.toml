@@ -1,0 +1,7 @@
+[package]
+name = "np_composite"
+version = "0.0.0"
+edition = "2018"
+
+[dependencies.np_graphics]
+path = "../np_graphics"
