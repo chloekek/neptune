@@ -1,7 +1,46 @@
 use std::marker::PhantomData;
 use std::slice;
 
-/// Mutable reference to a 2D array.
+/// Owned 2D array of pixels.
+pub struct PixelMap<T>
+{
+    pixels: Vec<T>,
+    extent_x: u32,
+    extent_y: u32,
+}
+
+impl<T> PixelMap<T>
+    where T: Copy
+{
+    /// Create a new pixel map.
+    ///
+    /// The pixel map is filled with the given pixel value.
+    /// If the number of pixels would overflow a `u32`,
+    /// this function returns [`None`].
+    pub fn new(pixel: T, extent_x: u32, extent_y: u32) -> Option<Self>
+    {
+        let num_pixels = u32::checked_mul(extent_x, extent_y)? as usize;
+        let pixels = vec![pixel; num_pixels];
+        Some(Self{pixels, extent_x, extent_y})
+    }
+}
+
+impl<T> PixelMap<T>
+{
+    /// Borrow the entire pixel map.
+    pub fn as_mut(&mut self) -> PixelMapMut<T>
+    {
+        PixelMapMut{
+            _slice: PhantomData,
+            pixels: self.pixels.as_mut_ptr(),
+            pitch: self.extent_x,
+            extent_x: self.extent_x,
+            extent_y: self.extent_y,
+        }
+    }
+}
+
+/// Mutable reference to a 2D array of pixels.
 pub struct PixelMapMut<'a, T>
 {
     _slice: PhantomData<&'a mut [T]>,
